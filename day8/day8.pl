@@ -7,6 +7,8 @@
 
 :- initialization main.
 
+% Input Parsing
+
 signal(S) --> {member(C, `abcdefg`), char_code(S, C)}, [C].
 
 signals(Signals) --> sequence(signal, Signals).
@@ -19,13 +21,25 @@ inputs(Lines) --> sequence(input_line, Lines).
 
 parse_input(Lines) :- phrase_from_file(inputs(Lines), 'input.txt').
 
+% Part 1
 
 unique_length(L) :- length(L, X), member(X, [2,3,4,8]).
 unique_outputs((_, Outputs), N) :- include(unique_length, Outputs, Uniques), length(Uniques, N).
 part1(Lines, Count) :- maplist(unique_outputs, Lines, Ns), sum_list(Ns, Count).
 
 
-mem_of_len(Ds, N, X) :- member(L, Ds), length(L, N), member(X, L).
+% Part 2
+
+segments([a,b,c,e,f,g], 0).
+segments([c, f], 1).
+segments([a,c,d,e,g], 2).
+segments([a,c,d,f,g], 3).
+segments([b, c, d, f], 4).
+segments([a,b,d,f,g], 5).
+segments([a,b,d,e,f,g], 6).
+segments([a,c,f], 7).
+segments([a,b,c,d,e,f,g], 8).
+segments([a,b,c,d,f,g], 9).
 
 % X is a member of all digits of length Len
 mem_of_all([], _, _).
@@ -63,18 +77,6 @@ digits_number(Ds, N) :-
 translate_number((TestOuts, SegList), N) :- 
     maplist(translate_digit(TestOuts), SegList, Ns),
     digits_number(Ns, N).
-
-segments([a,b,c,e,f,g], 0).
-segments([c, f], 1).
-segments([a,c,d,e,g], 2).
-segments([a,c,d,f,g], 3).
-segments([b, c, d, f], 4).
-segments([a,b,d,f,g], 5).
-segments([a,b,d,e,f,g], 6).
-segments([a,c,f], 7).
-segments([a,b,c,d,e,f,g], 8).
-segments([a,b,c,d,f,g], 9).
-
 
 part2(Lines, N) :-
     maplist(translate_number, Lines, Ns),
