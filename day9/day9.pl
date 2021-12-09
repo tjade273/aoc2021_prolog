@@ -6,7 +6,6 @@
 :- use_module(library(clpfd)).
 
 :- initialization main.
-:- table flows_into/3.
 
 % Input Parsing
 
@@ -51,17 +50,22 @@ local_minimum(Grid, Minimum) :-
     gen_assoc(Index, Grid, Minimum),
     \+ lower_neighbor(Grid, Index, _).
 
+part1(Grid, N) :-
+    findall(Minimum, local_minimum(Grid, Minimum), Mins),
+    length(Mins, L),
+    sum_list(Mins, S),
+    N #= L + S.
+
+
+% Part 2
+
+:- table flows_into/3.
 flows_into(Grid, Index, Index) :- get_assoc(Index, Grid, 9), !.
 flows_into(Grid, Index, LocalMin) :-
     lower_neighbor(Grid, Index, IndexLower), !,
     flows_into(Grid, IndexLower, LocalMin).
 flows_into(_, LocalMin, LocalMin).
 
-part1(Grid, N) :-
-    findall(Minimum, local_minimum(Grid, Minimum), Mins),
-    length(Mins, L),
-    sum_list(Mins, S),
-    N #= L + S.
 
 swap(X-Y, Y-X).
 
