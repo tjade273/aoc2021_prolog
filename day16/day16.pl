@@ -1,16 +1,12 @@
 #!/usr/bin/env swipl
 
-:- use_module(library(readutil)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/high_order)).
 :- use_module(library(clpfd)).
 
-%:- set_prolog_flag(double_quotes, chars).
-
-%:- initialization main.
+:- initialization main.
 
 % (Hex) Input Parsing
-
 
 input(N) --> xinteger(N), "\n".
 parse_input(File, S) :-
@@ -48,15 +44,13 @@ stopat(N), [X] --> [X], {N #> 0, N1 #= N - 1}, stopat(N1).
 subpackets(0, Packets) --> binary_number(PacketLen, 15), stopat(PacketLen), sequence(packet, Packets), [stopat].
 subpackets(1, Packets) --> binary_number(PacketLen, 11), {length(Packets, PacketLen)}, sequence(packet, Packets).
 
-packet_body(4, N) --> literal(N).
+packet_body(4, [N]) --> literal(N).
 packet_body(_, Packets) --> bit(LType), subpackets(LType, Packets).
 
 packet((Version, TypeID, Body)) --> packet_header(Version, TypeID), packet_body(TypeID, Body).
 
 zero(_) --> `0`.
 transmission(Packet) --> packet(Packet), sequence(zero, _).
-
-
 
 
 % Part 1
@@ -66,9 +60,32 @@ part1((Version, _, Packets), N) :-
     sum_list(Ns, N0),
     N #= N0 + Version.
 
+% Part 2
 
-    
+lop(0, L, X) :- sum_list(L, X).
+lop(1, [X], X).
+lop(1, [H|T], X) :- lop(1, T, X1), X #= H * X1.
+lop(2, L, X) :- min_list(L, X).
+lop(3, L, X) :- max_list(L, X).
+lop(4, [X], X).
+lop(5, [A, B], 1) :- A #> B.
+lop(5, [A, B], 0) :- A #=< B.
+lop(6, [A, B], X) :- lop(5, [B, A], X).
+lop(7, [A, B], 1) :- A #= B.
+lop(7, [A, B], 0) :- A #\= B.
 
+eval(N, N) :- integer(N).
 
+eval((_, TypeID, Body), N) :- 
+    maplist(eval, Body, Results), 
+    lop(TypeID, Results, N).
 
+main :-
+    parse_input('input.txt', Input),
+    phrase(transmission(T), Input),
+    part1(T, N1),
+    print(N1), nl,
+    eval(T, N2),
+    print(N2), nl,
+    halt(0).
 
